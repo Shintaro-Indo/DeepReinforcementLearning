@@ -116,3 +116,8 @@ pyvenv.cfg
 *.pyc
 share/
 etc/
+
+run/logs
+run/models
+.envrc
+.python-version
