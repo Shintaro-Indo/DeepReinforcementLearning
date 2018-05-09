@@ -1,28 +1,23 @@
 # -*- coding: utf-8 -*-
 # %matplotlib inline
+import importlib
+import pickle
+import random
+from shutil import copyfile
 
 import numpy as np
-np.set_printoptions(suppress=True)
-
-from shutil import copyfile
-import random
-
-
 from keras.utils import plot_model
 
-from game import Game, GameState
 from agent import Agent
+from funcs import playMatches
+from game import Game, GameState
+import initialise
+import loggers as lg
 from memory import Memory
 from model import Residual_CNN
-from funcs import playMatches
-
-import loggers as lg
-
 from settings import run_folder, run_archive_folder
-import initialise
-import pickle
-import importlib
 
+np.set_printoptions(suppress=True)
 
 lg.logger_main.info('=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*')
 lg.logger_main.info('=*=*=*=*=*=.      NEW LOG      =*=*=*=*=*')
@@ -33,7 +28,8 @@ env = Game()
 # If loading an existing neural network, copy the config file to root
 if initialise.INITIAL_RUN_NUMBER != None:
     copyfile(run_archive_folder + env.name + '/run' +
-             str(initialise.INITIAL_RUN_NUMBER).zfill(4) + '/config.py', './config.py')
+        str(initialise.INITIAL_RUN_NUMBER).zfill(4) + '/config.py',
+            './config.py')
 
 import config
 
@@ -44,22 +40,23 @@ if initialise.INITIAL_MEMORY_VERSION == None:
 else:
     print('LOADING MEMORY VERSION ' +
           str(initialise.INITIAL_MEMORY_VERSION) + '...')
-    memory = pickle.load(open(run_archive_folder + env.name + '/run' + str(initialise.INITIAL_RUN_NUMBER).zfill(
-        4) + "/memory/memory" + str(initialise.INITIAL_MEMORY_VERSION).zfill(4) + ".p",   "rb"))
+    memory = pickle.load(open(run_archive_folder + env.name + '/run' +
+        str(initialise.INITIAL_RUN_NUMBER).zfill(4) + "/memory/memory"
+            + str(initialise.INITIAL_MEMORY_VERSION).zfill(4) + ".p", "rb"))
 
 ######## LOAD MODEL IF NECESSARY ########
 
 # create an untrained neural network objects from the config file
 current_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE,
-                          (2,) + env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
+    (2,) + env.grid_shape, env.action_size, config.HIDDEN_CNN_LAYERS)
 best_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE,
-                       (2,) + env.grid_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)
+    (2,) + env.grid_shape, env.action_size, config.HIDDEN_CNN_LAYERS)
 
 # If loading an existing neural netwrok, set the weights from that model
 if initialise.INITIAL_MODEL_VERSION != None:
     best_player_version = initialise.INITIAL_MODEL_VERSION
-    print('LOADING MODEL VERSION ' +
-          str(initialise.INITIAL_MODEL_VERSION) + '...')
+    print('LOADING MODEL VERSION ' + str(initialise.INITIAL_MODEL_VERSION) +
+        '...')
     m_tmp = best_NN.read(
         env.name, initialise.INITIAL_RUN_NUMBER, best_player_version)
     current_NN.model.set_weights(m_tmp.get_weights())
@@ -71,17 +68,17 @@ else:
 
 # copy the config file to the run folder
 copyfile('./config.py', run_folder + 'config.py')
-plot_model(current_NN.model, to_file=run_folder +
-           'models/model.png', show_shapes=True)
+plot_model(current_NN.model, to_file=run_folder + 'models/model.png',
+    show_shapes=True)
 
 print('\n')
 
 ######## CREATE THE PLAYERS ########
 
-current_player = Agent('current_player', env.state_size,
-                       env.action_size, config.MCTS_SIMS, config.CPUCT, current_NN)
-best_player = Agent('best_player', env.state_size,
-                    env.action_size, config.MCTS_SIMS, config.CPUCT, best_NN)
+current_player = Agent('current_player', env.state_size, env.action_size,
+    config.MCTS_SIMS, config.CPUCT, current_NN)
+best_player = Agent('best_player', env.state_size, env.action_size,
+    config.MCTS_SIMS, config.CPUCT, best_NN)
 #user_player = User('player1', env.state_size, env.action_size)
 iteration = 0
 
@@ -99,7 +96,7 @@ while 1:
     ######## SELF PLAY ########
     print('SELF PLAYING ' + str(config.EPISODES) + ' EPISODES...')
     _, memory, _, _ = playMatches(best_player, best_player, config.EPISODES,
-                                  lg.logger_main, turns_until_tau0=config.TURNS_UNTIL_TAU0, memory=memory)
+        lg.logger_main, turns_until_tau0=config.TURNS_UNTIL_TAU0, memory=memory)
     print('\n')
 
     memory.clear_stmemory()
@@ -112,8 +109,8 @@ while 1:
         print('')
 
         if iteration % 5 == 0:
-            pickle.dump(memory, open(
-                run_folder + "memory/memory" + iteration + ".p", "wb"))
+            pickle.dump(memory, open(run_folder + "memory/memory" + iteration +
+                ".p", "wb"))
 
         lg.logger_memory.info('====================')
         lg.logger_memory.info('NEW MEMORIES')
@@ -127,28 +124,30 @@ while 1:
                 s['state'])
             best_value, best_probs, _ = best_player.get_preds(s['state'])
 
-            lg.logger_memory.info('MCTS VALUE FOR %s: %f',
-                                  s['playerTurn'], s['value'])
+            lg.logger_memory.info('MCTS VALUE FOR %s: %f', s['playerTurn'],
+                s['value'])
             lg.logger_memory.info(
                 'CUR PRED VALUE FOR %s: %f', s['playerTurn'], current_value)
             lg.logger_memory.info(
                 'BES PRED VALUE FOR %s: %f', s['playerTurn'], best_value)
             lg.logger_memory.info('THE MCTS ACTION VALUES: %s', [
-                                  '%.2f' % elem for elem in s['AV']])
+                '%.2f' % elem for elem in s['AV']])
             lg.logger_memory.info('CUR PRED ACTION VALUES: %s', [
-                                  '%.2f' % elem for elem in current_probs])
+                '%.2f' % elem for elem in current_probs])
             lg.logger_memory.info('BES PRED ACTION VALUES: %s', [
-                                  '%.2f' % elem for elem in best_probs])
+                '%.2f' % elem for elem in best_probs])
             lg.logger_memory.info('ID: %s', s['state'].id)
             lg.logger_memory.info(
-                'INPUT TO MODEL: %s', current_player.model.convertToModelInput(s['state']))
+                'INPUT TO MODEL: %s',
+                current_player.model.convertToModelInput(s['state']))
 
             s['state'].render(lg.logger_memory)
 
         ######## TOURNAMENT ########
         print('TOURNAMENT...')
-        scores, _, points, sp_scores = playMatches(
-            best_player, current_player, config.EVAL_EPISODES, lg.logger_tourney, turns_until_tau0=0, memory=None)
+        scores, _, points, sp_scores = playMatches(best_player, current_player,
+            config.EVAL_EPISODES, lg.logger_tourney, turns_until_tau0=0,
+            memory=None)
         print('\nSCORES')
         print(scores)
         print('\nSTARTING PLAYER / NON-STARTING PLAYER SCORES')
@@ -157,7 +156,8 @@ while 1:
 
         print('\n\n')
 
-        if scores['current_player'] > scores['best_player'] * config.SCORING_THRESHOLD:
+        if scores['current_player'] >
+                scores['best_player'] * config.SCORING_THRESHOLD:
             best_player_version = best_player_version + 1
             best_NN.model.set_weights(current_NN.model.get_weights())
             best_NN.write(env.name, best_player_version)

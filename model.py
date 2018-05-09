@@ -1,23 +1,20 @@
 # %matplotlib inline
-
-import logging
 import config
+import logging
+
+from keras import regularizers
+import keras.backend as K
+from keras.layers import (Input, Dense, Conv2D, Flatten, BatchNormalization,
+	Activation, LeakyReLU, add)
+from keras.models import Sequential, load_model, Model
+from keras.optimizers import SGD
+import matplotlib.pyplot as plt
 import numpy as np
 
-import matplotlib.pyplot as plt
-
-from keras.models import Sequential, load_model, Model
-from keras.layers import Input, Dense, Conv2D, Flatten, BatchNormalization, Activation, LeakyReLU, add
-from keras.optimizers import SGD
-from keras import regularizers
-
-from loss import softmax_cross_entropy_with_logits
-
 import loggers as lg
-
-import keras.backend as K
-
+from loss import softmax_cross_entropy_with_logits
 from settings import run_folder, run_archive_folder
+
 
 class Gen_Model():
 	def __init__(self, reg_const, learning_rate, input_dim, output_dim):
@@ -25,32 +22,43 @@ class Gen_Model():
 		self.learning_rate = learning_rate
 		self.input_dim = input_dim
 		self.output_dim = output_dim
-
+	
 	def predict(self, x):
 		return self.model.predict(x)
 
-	def fit(self, states, targets, epochs, verbose, validation_split, batch_size):
-		return self.model.fit(states, targets, epochs=epochs, verbose=verbose, validation_split = validation_split, batch_size = batch_size)
+	def fit(self, states, targets, epochs, verbose, validation_split,
+	 		batch_size):
+		return self.model.fit(states, targets, epochs=epochs, verbose=verbose,
+			validation_split = validation_split, batch_size = batch_size)
 
 	def write(self, game, version):
-		self.model.save(run_folder + 'models/version' + "{0:0>4}".format(version) + '.h5')
+		self.model.save(run_folder + 'models/version'
+			+ "{0:0>4}".format(version) + '.h5')
 
 	def read(self, game, run_number, version):
-		return load_model( run_archive_folder + game + '/run' + str(run_number).zfill(4) + "/models/version" + "{0:0>4}".format(version) + '.h5', custom_objects={'softmax_cross_entropy_with_logits': softmax_cross_entropy_with_logits})
+		return load_model( run_archive_folder + game + '/run' +
+			str(run_number).zfill(4) + "/models/version" +
+			"{0:0>4}".format(version) + '.h5',
+			custom_objects={'softmax_cross_entropy_with_logits':
+				softmax_cross_entropy_with_logits})
 
 	def printWeightAverages(self):
 		layers = self.model.layers
 		for i, l in enumerate(layers):
 			try:
 				x = l.get_weights()[0]
-				lg.logger_model.info('WEIGHT LAYER %d: ABSAV = %f, SD =%f, ABSMAX =%f, ABSMIN =%f', i, np.mean(np.abs(x)), np.std(x), np.max(np.abs(x)), np.min(np.abs(x)))
+				lg.logger_model.info('WEIGHT LAYER %d: ABSAV = %f, SD =%f, \
+					ABSMAX =%f, ABSMIN =%f', i, np.mean(np.abs(x)), np.std(x),
+					np.max(np.abs(x)), np.min(np.abs(x)))
 			except:
 				pass
 		lg.logger_model.info('------------------')
 		for i, l in enumerate(layers):
 			try:
 				x = l.get_weights()[1]
-				lg.logger_model.info('BIAS LAYER %d: ABSAV = %f, SD =%f, ABSMAX =%f, ABSMIN =%f', i, np.mean(np.abs(x)), np.std(x), np.max(np.abs(x)), np.min(np.abs(x)))
+				lg.logger_model.info('BIAS LAYER %d: ABSAV = %f, SD =%f, \
+					ABSMAX =%f, ABSMIN =%f', i, np.mean(np.abs(x)), np.std(x),
+					np.max(np.abs(x)), np.min(np.abs(x)))
 			except:
 				pass
 		lg.logger_model.info('******************')
@@ -66,35 +74,38 @@ class Gen_Model():
 				weights = x[0]
 				s = weights.shape
 
-				fig = plt.figure(figsize=(s[2], s[3]))  # width, height in inches
+				fig = plt.figure(figsize=(s[2], s[3])) # width, height in inches
 				channel = 0
 				filter = 0
 				for i in range(s[2] * s[3]):
 
 					sub = fig.add_subplot(s[3], s[2], i + 1)
-					sub.imshow(weights[:,:,channel,filter], cmap='coolwarm', clim=(-1, 1),aspect="auto")
+					sub.imshow(weights[:,:,channel,filter], cmap='coolwarm',
+						clim=(-1, 1),aspect="auto")
 					channel = (channel + 1) % s[2]
 					filter = (filter + 1) % s[3]
 
 			except:
 
 				try:
-					fig = plt.figure(figsize=(3, len(x)))  # width, height in inches
+					fig = plt.figure(figsize=(3, len(x))) # w, h in inches
 					for i in range(len(x)):
 						sub = fig.add_subplot(len(x), 1, i + 1)
 						if i == 0:
 							clim = (0,2)
 						else:
 							clim = (0, 2)
-						sub.imshow([x[i]], cmap='coolwarm', clim=clim,aspect="auto")
+						sub.imshow([x[i]], cmap='coolwarm', clim=clim,
+							aspect="auto")
 
 					plt.show()
 
 				except:
 					try:
-						fig = plt.figure(figsize=(3, 3))  # width, height in inches
+						fig = plt.figure(figsize=(3, 3)) # w, h in inches
 						sub = fig.add_subplot(1, 1, 1)
-						sub.imshow(x[0], cmap='coolwarm', clim=(-1, 1),aspect="auto")
+						sub.imshow(x[0], cmap='coolwarm', clim=(-1, 1),
+							aspect="auto")
 
 						plt.show()
 
@@ -107,8 +118,10 @@ class Gen_Model():
 
 
 class Residual_CNN(Gen_Model):
-	def __init__(self, reg_const, learning_rate, input_dim,  output_dim, hidden_layers):
-		Gen_Model.__init__(self, reg_const, learning_rate, input_dim, output_dim)
+	def __init__(self, reg_const, learning_rate, input_dim,  output_dim,
+			hidden_layers):
+		Gen_Model.__init__(self, reg_const, learning_rate, input_dim,
+			output_dim)
 		self.hidden_layers = hidden_layers
 		self.num_layers = len(hidden_layers)
 		self.model = self._build_model()
@@ -222,7 +235,8 @@ class Residual_CNN(Gen_Model):
 
 		main_input = Input(shape = self.input_dim, name = 'main_input')
 
-		x = self.conv_layer(main_input, self.hidden_layers[0]['filters'], self.hidden_layers[0]['kernel_size'])
+		x = self.conv_layer(main_input, self.hidden_layers[0]['filters'],
+			self.hidden_layers[0]['kernel_size'])
 
 		if len(self.hidden_layers) > 1:
 			for h in self.hidden_layers[1:]:
@@ -232,7 +246,8 @@ class Residual_CNN(Gen_Model):
 		ph = self.policy_head(x)
 
 		model = Model(inputs=[main_input], outputs=[vh, ph])
-		model.compile(loss={'value_head': 'mean_squared_error', 'policy_head': softmax_cross_entropy_with_logits},
+		model.compile(loss={'value_head': 'mean_squared_error',
+			'policy_head': softmax_cross_entropy_with_logits},
 			optimizer=SGD(lr=self.learning_rate, momentum = config.MOMENTUM),
 			loss_weights={'value_head': 0.5, 'policy_head': 0.5}
 			)
@@ -240,6 +255,22 @@ class Residual_CNN(Gen_Model):
 		return model
 
 	def convertToModelInput(self, state):
-		inputToModel =  state.binary #np.append(state.binary, [(state.playerTurn + 1)/2] * self.input_dim[1] * self.input_dim[2])
+		"""
+		state.binary:
+		 	connect4: (84,) # 42 * 2
+			metasquares: (84,) # should be 50 ?
+		self.input_dim:
+			connect4: (2, 6, 7) # 2 * 6 * 7 = 84
+			metasquares: (2, 5, 5) # 2 * 5 * 5 =50
+		"""
+		inputToModel = state.binary # connect4: (84,), metasquares: (84, )
+
+		# for debug
+		# print(inputToModel.shape)
+		# print(self.input_dim)
+
+		# np.append(state.binary,[(
+		# 	state.playerTurn + 1)/2] * self.input_dim[1] * self.input_dim[2])
+
 		inputToModel = np.reshape(inputToModel, self.input_dim)
 		return (inputToModel)

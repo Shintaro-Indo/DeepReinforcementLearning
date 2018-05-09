@@ -1,19 +1,17 @@
 # %matplotlib inline
-
-import numpy as np
 import random
-
-import MCTS as mc
-from game import GameState
-from loss import softmax_cross_entropy_with_logits
-
-import config
-import loggers as lg
 import time
 
-import matplotlib.pyplot as plt
 from IPython import display
+import matplotlib.pyplot as plt
+import numpy as np
 import pylab as pl
+
+import config
+from game import GameState
+import loggers as lg
+from loss import softmax_cross_entropy_with_logits
+import MCTS as mc
 
 
 class User():
@@ -32,7 +30,8 @@ class User():
 
 
 class Agent():
-    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct, model):
+    def __init__(self, name, state_size, action_size, mcts_simulations, cpuct,
+            model):
         self.name = name
 
         self.state_size = state_size
@@ -56,8 +55,8 @@ class Agent():
 
         lg.logger_mcts.info('ROOT NODE...%s', self.mcts.root.state.id)
         self.mcts.root.state.render(lg.logger_mcts)
-        lg.logger_mcts.info('CURRENT PLAYER...%d',
-                            self.mcts.root.state.playerTurn)
+        lg.logger_mcts.info(
+            'CURRENT PLAYER...%d', self.mcts.root.state.playerTurn)
 
         # MOVE THE LEAF NODE
         leaf, value, done, breadcrumbs = self.mcts.moveToLeaf()
@@ -91,7 +90,7 @@ class Agent():
 
         nextState, _, _ = state.takeAction(action)
 
-        NN_value = -self.get_preds(nextState)[0]
+        NN_value = - self.get_preds(nextState)[0]
 
         lg.logger_mcts.info('ACTION VALUES...%s', pi)
         lg.logger_mcts.info('CHOSEN ACTION...%d', action)
@@ -115,7 +114,7 @@ class Agent():
 
         mask = np.ones(logits.shape, dtype=bool)
         mask[allowedActions] = False
-        logits[mask] = -100
+        logits[mask] = - 100
 
         # SOFTMAX
         odds = np.exp(logits)
@@ -130,8 +129,8 @@ class Agent():
         if done == 0:
 
             value, probs, allowedActions = self.get_preds(leaf.state)
-            lg.logger_mcts.info('PREDICTED VALUE FOR %d: %f',
-                                leaf.state.playerTurn, value)
+            lg.logger_mcts.info(
+                'PREDICTED VALUE FOR %d: %f', leaf.state.playerTurn, value)
 
             probs = probs[allowedActions]
 
@@ -186,13 +185,16 @@ class Agent():
             minibatch = random.sample(ltmemory, min(
                 config.BATCH_SIZE, len(ltmemory)))
 
-            training_states = np.array(
-                [self.model.convertToModelInput(row['state']) for row in minibatch])
-            training_targets = {'value_head': np.array(
-                [row['value'] for row in minibatch]), 'policy_head': np.array([row['AV'] for row in minibatch])}
+            training_states = np.array([
+                self.model.convertToModelInput(row['state'])
+                    for row in minibatch])
+            training_targets = {'value_head': np.array([
+                row['value'] for row in minibatch]),
+                'policy_head': np.array([row['AV'] for row in minibatch])}
 
             fit = self.model.fit(training_states, training_targets,
-                                 epochs=config.EPOCHS, verbose=1, validation_split=0, batch_size=32)
+                epochs=config.EPOCHS, verbose=1, validation_split=0,
+                    atch_size=32)
             lg.logger_mcts.info('NEW LOSS %s', fit.history)
 
             self.train_overall_loss.append(
@@ -207,7 +209,7 @@ class Agent():
         plt.plot(self.train_policy_loss, 'k--')
 
         plt.legend(['train_overall_loss', 'train_value_loss',
-                    'train_policy_loss'], loc='lower left')
+            'train_policy_loss'], loc='lower left')
 
         display.clear_output(wait=True)
         display.display(pl.gcf())
@@ -229,5 +231,6 @@ class Agent():
 
     def changeRootMCTS(self, state):
         lg.logger_mcts.info(
-            '****** CHANGING ROOT OF MCTS TREE TO %s FOR AGENT %s ******', state.id, self.name)
+            '****** CHANGING ROOT OF MCTS TREE TO %s FOR AGENT %s ******',
+            state.id, self.name)
         self.mcts.root = self.mcts.tree[state.id]

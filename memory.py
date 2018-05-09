@@ -1,5 +1,6 @@
-import numpy as np
 from collections import deque
+
+import numpy as np
 
 import config
 
@@ -13,8 +14,8 @@ class Memory:
     def commit_stmemory(self, identities, state, actionValues):
         for r in identities(state, actionValues):
             self.stmemory.append({
-                'board': r[0].board, 'state': r[0], 'id': r[0].id, 'AV': r[1], 'playerTurn': r[0].playerTurn
-            })
+                'board': r[0].board, 'state': r[0], 'id': r[0].id, 'AV': r[1],
+                 'playerTurn': r[0].playerTurn})
 
     def commit_ltmemory(self):
         for i in self.stmemory:

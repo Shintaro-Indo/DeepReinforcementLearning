@@ -90,6 +90,7 @@ https://medium.com/applied-data-science/alphago-zero-explained-in-one-diagram-36
   - このメモリを使って自分のNNを再訓練し，best_playerと対戦する．
   - current_playerが勝てば，best_player内のNNがcurrent_player内のNNと入れ替わり，ループが繰り返される．
 
+
 ### agent.py
 - Agentクラス
 - 各プレーヤーはそれぞれのNNとモンテカルロ木探索で初期化される．
@@ -184,3 +185,7 @@ env
 - ログファイルを見たければ，このアルゴリズムの働きと，その心の中を理解するために役立つ．
 - 各段階でそれぞれの手(動作)に割り当てられた確率がわかる．
 - 数日間の訓練で，ミニバッチの繰り返し回数に対する損失が得られる．
+
+
+## 知見
+- 環境のクラス名がGameゆえ，環境を変える場合は全てのGameを変える必要がある(funcs.py内など)．

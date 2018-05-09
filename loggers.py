@@ -1,12 +1,12 @@
-
-from utils import setup_logger
 from settings import run_folder
+from utils import setup_logger
+
 
 # SET all LOGGER_DISABLED to True to disable logging
 # WARNING: the mcts log file gets big quite quickly
 
-LOGGER_DISABLED = {
-    'main': False, 'memory': False, 'tourney': False, 'mcts': False, 'model': False}
+LOGGER_DISABLED = {'main': False, 'memory': False, 'tourney': False,
+    'mcts': False, 'model': False}
 
 
 logger_mcts = setup_logger('logger_mcts', run_folder + 'logs/logger_mcts.log')

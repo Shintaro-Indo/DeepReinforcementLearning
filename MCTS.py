@@ -1,8 +1,9 @@
-import numpy as np
 import logging
-import config
-
 from utils import setup_logger
+
+import numpy as np
+
+import config
 import loggers as lg
 
 
@@ -34,8 +35,7 @@ class Edge():
             'N': 0,
             'W': 0,
             'Q': 0,
-            'P': prior,
-        }
+            'P': prior,}
 
 
 class MCTS():
@@ -86,9 +86,13 @@ class MCTS():
 
                 Q = edge.stats['Q']
 
-                # lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f'
-                # , action, action % 7, edge.stats['N'], round(edge.stats['P'],6), round(nu[idx],6), ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx] )
-                # , round(edge.stats['W'],6), round(Q,6), round(U,6), round(Q+U,6))
+                # lg.logger_mcts.info('action: %d (%d)... N = %d, P = %f, \
+                #     nu = %f, adjP = %f, W = %f, Q = %f, U = %f, Q+U = %f',
+                #     action, action % 7, edge.stats['N'],
+                #     round(edge.stats['P'],6), round(nu[idx],6),
+                #     ((1-epsilon) * edge.stats['P'] + epsilon * nu[idx]),
+                #     round(edge.stats['W'],6), round(Q,6), round(U,6),
+                #     round(Q+U,6))
 
                 if Q + U > maxQU:
                     maxQU = Q + U
@@ -124,8 +128,9 @@ class MCTS():
             edge.stats['W'] = edge.stats['W'] + value * direction
             edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
 
-            lg.logger_mcts.info('updating edge with value %f for player %d... N = %d, W = %f, Q = %f', value * direction, playerTurn, edge.stats['N'], edge.stats['W'], edge.stats['Q']
-                                )
+            lg.logger_mcts.info('updating edge with value %f for player %d... \
+                N = %d, W = %f, Q = %f', value * direction, playerTurn,
+                edge.stats['N'], edge.stats['W'], edge.stats['Q'])
 
             edge.outNode.state.render(lg.logger_mcts)
 
