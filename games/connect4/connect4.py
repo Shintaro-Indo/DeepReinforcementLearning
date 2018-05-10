@@ -3,18 +3,18 @@ import logging
 import numpy as np
 
 
-class Game:
+class Connect4:
 
 	def __init__(self):
-		self.currentPlayer = 1
-		self.gameState = GameState(np.array([
+		self.currentPlayer = 1 # 1 or -1 (refer to self.step())
+		self.gameState = Connect4State(np.array([
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0],
-			dtype=np.int), 1)
+			dtype=np.int), 1) # object
 		self.actionSpace = np.array([
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
@@ -24,14 +24,23 @@ class Game:
 			0, 0, 0, 0, 0, 0, 0],
 			dtype=np.int)
 		self.pieces = {'1':'X', '0': '-', '-1':'O'}
-		self.grid_shape = (6, 7)
-		self.input_shape = (2, 6, 7)
+		self.grid_shape = (6, 7) # shape of game screen
+		self.input_shape = (2, 6, 7) # 2: current and opponent position
 		self.name = 'connect4'
 		self.state_size = len(self.gameState.binary)
 		self.action_size = len(self.actionSpace)
 
 	def reset(self):
-		self.gameState = GameState(np.array([
+		"""
+		Reset self.gameState and self.currentPlayer
+
+		Args:
+			self.count_nonzero
+
+		Returns:
+			self.gameState: object
+		"""
+		self.gameState = Connect4State(np.array([
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
@@ -43,6 +52,15 @@ class Game:
 		return self.gameState
 
 	def step(self, action):
+		"""
+		Update next_state, value, done, self.gameState, self.currentPlayer
+
+		Args:
+			action
+
+		Returns:
+			((next_state, value, done, info)) # value: reward?, info: None
+		"""
 		next_state, value, done = self.gameState.takeAction(action)
 		self.gameState = next_state
 		self.currentPlayer = - self.currentPlayer
@@ -50,11 +68,21 @@ class Game:
 		return ((next_state, value, done, info))
 
 	def identities(self, state, actionValues):
+		"""
+		Get the idendtities of (state and actionValues) and mirror-reversed one
+
+		Args:
+			state, actionValues
+
+		Returns:
+			identities: [(state, AV), (mirror-state, mirror-AV)]
+		"""
 		identities = [(state, actionValues)]
 
 		currentBoard = state.board
 		currentAV = actionValues
 
+		# get mirror-recersed board
 		currentBoard = np.array([
 			currentBoard[6], currentBoard[5], currentBoard[4],
 				currentBoard[3], currentBoard[2], currentBoard[1],
@@ -75,6 +103,7 @@ class Game:
 				currentBoard[38], currentBoard[37], currentBoard[36],
 					currentBoard[35]])
 
+		# get mirror-recersed AV
 		currentAV = np.array([
 			currentAV[6], currentAV[5], currentAV[4], currentAV[3],
 				currentAV[2], currentAV[1], currentAV[0],
@@ -89,15 +118,15 @@ class Game:
 			currentAV[41], currentAV[40], currentAV[39], currentAV[38],
 				currentAV[37], currentAV[36], currentAV[35]])
 
-		identities.append((GameState(currentBoard, state.playerTurn),
+		identities.append((Connect4State(currentBoard, state.playerTurn),
 			currentAV))
 
 		return identities
 
 
-class GameState():
+class Connect4State():
 	def __init__(self, board, playerTurn):
-		self.board = board
+		self.board = board # (42,)
 		self.pieces = {'1':'X', '0': '-', '-1':'O'}
 		self.winners = [
 			[0, 1, 2, 3],
@@ -173,27 +202,38 @@ class GameState():
 			[15, 23, 31, 39],
 			[14, 22, 30, 38]]
 		self.playerTurn = playerTurn
-		self.binary = self._binary()
-		self.id = self._convertStateToId()
-		self.allowedActions = self._allowedActions()
-		self.isEndGame = self._checkForEndGame()
-		self.value = self._getValue()
-		self.score = self._getScore()
+		self.binary = self._binary() # (84,). [current player, opponent]
+		self.id = self._convertStateToId() # e.g. '010...010...0' (length: 84)
+		self.allowedActions = self._allowedActions() # list of allowd index
+		self.isEndGame = self._checkForEndGame() # 1 or 0
+		self.value = self._getValue() # (0, 0, 0) or (-1, -1, 1)
+		self.score = self._getScore() # (0, 0) or (-1, 1)
 
 	def _allowedActions(self):
+		"""
+		Get the list of allowd actions
+
+		Args:
+			None
+
+		Returns:
+			allowd
+		"""
 		allowed = []
 		for i in range(len(self.board)):
 			if i >= len(self.board) - 7:
 				if self.board[i]==0:
 					allowed.append(i)
 			else:
-				if self.board[i] == 0 and self.board[i+7] != 0:
+				if self.board[i] == 0 and self.board[i + 7] != 0:
 					allowed.append(i)
 
 		return allowed
 
 	def _binary(self):
 		"""
+		Get the list of current player position and opponent position
+
 		Args:
 			None
 
@@ -204,18 +244,27 @@ class GameState():
 		currentplayer_position[self.board==self.playerTurn] = 1
 
 		other_position = np.zeros(len(self.board), dtype=np.int)
-		other_position[self.board==-self.playerTurn] = 1
+		other_position[self.board == -self.playerTurn] = 1
 
 		position = np.append(currentplayer_position, other_position)
 
 		return (position)
 
 	def _convertStateToId(self):
+		"""
+		Get the id of state
+
+		Args:
+			None
+
+		Returns:
+			id: e.g. '010...010...0' (length: 84)
+		"""
 		player1_position = np.zeros(len(self.board), dtype=np.int)
-		player1_position[self.board==1] = 1
+		player1_position[self.board == 1] = 1
 
 		other_position = np.zeros(len(self.board), dtype=np.int)
-		other_position[self.board==-1] = 1
+		other_position[self.board == -1] = 1
 
 		position = np.append(player1_position, other_position)
 
@@ -224,33 +273,69 @@ class GameState():
 		return id
 
 	def _checkForEndGame(self):
+		"""
+		Get whether the game is ended
+
+		Args:
+			None
+
+		Returns:
+			1 (ended) or 0 (not ended)
+		"""
 		if np.count_nonzero(self.board) == 42:
 			return 1
 
 		for x, y, z, a in self.winners:
 			if (self.board[x] + self.board[y] + self.board[z] + self.board[a]
-					== 4 * - (self.playerTurn)):
+					== 4 * -(self.playerTurn)):
 				return 1
 		return 0
 
 	def _getValue(self):
-		# This is the value of the state for the current player
-		# i.e. if the previous player played a winning move, you lose
+		"""
+		Get the value of the state for the current player
+		i.e. if the previous player played a winning move, you lose
+
+		Args:
+			None
+
+		Returns:
+			(0, 0, 0) or (-1, -1, 1) # (current?, current, opponent)
+		"""
 		for x, y, z, a in self.winners:
 			if (self.board[x] + self.board[y] + self.board[z] + self.board[a]
 					== 4 * - (self.playerTurn)):
 				return (-1, -1, 1)
+
 		return (0, 0, 0)
 
 	def _getScore(self):
+		"""
+		Get tuple of current player and opponent value
+
+		Args:
+			None
+
+		Return:
+			(current player value, opponent value)
+		"""
 		tmp = self.value
 		return (tmp[1], tmp[2])
 
 	def takeAction(self, action):
+		"""
+		Get newState, value and done updated by the given action
+
+		Args:
+			action
+
+		Returns:
+			(newState, value, done)
+		"""
 		newBoard = np.array(self.board)
 		newBoard[action] = self.playerTurn
 
-		newState = GameState(newBoard, -self.playerTurn)
+		newState = Connect4State(newBoard, -self.playerTurn)
 
 		value = 0
 		done = 0
@@ -262,7 +347,16 @@ class GameState():
 		return (newState, value, done)
 
 	def render(self, logger):
-		for r in range(6):
+		"""
+		Logging
+
+		Args:
+			logger
+
+		Returns:
+			None
+		"""
+		for r in range(6): # six rows
 			logger.info([self.pieces[str(x)] for x in
 				self.board[7 * r : (7 * r + 7)]])
 		logger.info('--------------')

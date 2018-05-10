@@ -3,13 +3,14 @@ import random
 
 from agent import Agent, User
 import config
-# from game import Game, GameState
-from games.metasquares.game import Game, GameState
+from games.connect4.connect4 import Connect4, Connect4State
+from games.metasquares.metasquares import MetaSquares, MetaSquaresState
 import loggers as lg
 from model import Residual_CNN
 
+
 def playMatchesBetweenVersions(env, run_version, player1version, player2version,
-    EPISODES, logger, turns_until_tau0, goes_first=0):
+        EPISODES, logger, turns_until_tau0, goes_first=0):
 
     if player1version == -1:
         player1 = User('player1', env.state_size, env.action_size)
@@ -43,10 +44,13 @@ def playMatchesBetweenVersions(env, run_version, player1version, player2version,
     return (scores, memory, points, sp_scores)
 
 
-def playMatches(player1, player2, EPISODES, logger, turns_until_tau0,
+def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
         memory=None, goes_first=0):
 
-    env = Game()
+    if game_name == 'connect4':
+        env = Connect4()
+    else:
+        env = MetaSquares()
     scores = {player1.name: 0, "drawn": 0, player2.name: 0}
     sp_scores = {'sp': 0, "drawn": 0, 'nsp': 0}
     points = {player1.name: [], player2.name: []}

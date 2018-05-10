@@ -3,11 +3,11 @@ import logging
 import numpy as np
 
 
-class Game:
+class MetaSquares:
 
 	def __init__(self):
 		self.currentPlayer = 1
-		self.gameState = GameState(np.array([
+		self.gameState = MetaSquaresState(np.array([
 			0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0,
@@ -29,7 +29,7 @@ class Game:
 		self.action_size = len(self.actionSpace)
 
 	def reset(self):
-		self.gameState = GameState(
+		self.gameState = MetaSquaresState(
 			np.array([
 				0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0,
@@ -77,7 +77,7 @@ class Game:
 				currentAV[24], currentAV[19], currentAV[14], currentAV[9],
 					currentAV[4]])
 
-			identities.append((GameState(currentBoard, state.playerTurn),
+			identities.append((MetaSquaresState(currentBoard, state.playerTurn),
 				currentAV))
 
 		currentBoard = np.array([
@@ -129,13 +129,13 @@ class Game:
 				currentAV[24], currentAV[19], currentAV[14], currentAV[9],
 					currentAV[4]])
 
-			identities.append((GameState(currentBoard, state.playerTurn),
+			identities.append((MetaSquaresState(currentBoard, state.playerTurn),
 				currentAV))
 
 		return identities
 
 
-class GameState():
+class MetaSquaresState():
 	def __init__(self, board, playerTurn):
 		self.board = board
 		self.pieces = {'1':'X', '0': '-', '-1':'O'}
@@ -280,7 +280,7 @@ class GameState():
 	def takeAction(self, action):
 		newBoard = np.array(self.board)
 		newBoard[action] = self.playerTurn
-		newState = GameState(newBoard, -self.playerTurn)
+		newState = MetaSquaresState(newBoard, -self.playerTurn)
 
 		value = 0
 		done = 0

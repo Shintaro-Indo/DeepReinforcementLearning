@@ -189,3 +189,23 @@ env
 
 ## 知見
 - 環境のクラス名がGameゆえ，環境を変える場合は全てのGameを変える必要がある(funcs.py内など)．
+
+
+## 疑問
+current playerのvalueがenv内では0か-1にしかならなそう．
+
+## Screen
+```
+□|□ ○ □|□
+ |---
+□|□ □ □ □
+...
+```
+
+## state
+0: square
+1: player1
+2: player2
+3: groove
+4: horizontal fence
+5: vertical fence
