@@ -22,7 +22,7 @@ class Connect4:
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0],
-			dtype=np.int)
+			dtype=np.int) # (None, 1)
 		self.pieces = {'1':'X', '0': '-', '-1':'O'}
 		self.grid_shape = (6, 7) # shape of game screen
 		self.input_shape = (2, 6, 7) # 2: current and opponent position
@@ -204,7 +204,7 @@ class Connect4State():
 		self.playerTurn = playerTurn
 		self.binary = self._binary() # (84,). [current player, opponent]
 		self.id = self._convertStateToId() # e.g. '010...010...0' (length: 84)
-		self.allowedActions = self._allowedActions() # list of allowd index
+		self.allowedActions = self._allowedActions() # list (None, 1)
 		self.isEndGame = self._checkForEndGame() # 1 or 0
 		self.value = self._getValue() # (0, 0, 0) or (-1, -1, 1)
 		self.score = self._getScore() # (0, 0) or (-1, 1)

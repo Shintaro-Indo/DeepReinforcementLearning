@@ -5,6 +5,7 @@ from agent import Agent, User
 import config
 from games.connect4.connect4 import Connect4, Connect4State
 from games.metasquares.metasquares import MetaSquares, MetaSquaresState
+from games.quoridor.quoridor import Quoridor, QuoridorState
 import loggers as lg
 from model import Residual_CNN
 
@@ -47,10 +48,12 @@ def playMatchesBetweenVersions(env, run_version, player1version, player2version,
 def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
         memory=None, goes_first=0):
 
-    if game_name == 'connect4':
-        env = Connect4()
-    else:
+    if game_name == 'quoridor':
+        env = Quoridor()
+    elif game_name == 'metaSquares':
         env = MetaSquares()
+    else:
+        env = Connect4()
     scores = {player1.name: 0, "drawn": 0, player2.name: 0}
     sp_scores = {'sp': 0, "drawn": 0, 'nsp': 0}
     points = {player1.name: [], player2.name: []}
@@ -61,12 +64,9 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
         logger.info('EPISODE %d OF %d', e+1, EPISODES)
         logger.info('====================')
 
-        print(str(e+1) + ' '),
+        print('EPISODE: ', str(e+1) + ' ', end='\n\n'),
 
         state = env.reset()
-
-        # for debug
-        # print('state in playMatches', state.binary.shape)
 
         done = 0
         turn = 0
@@ -79,11 +79,13 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
             player1Starts = goes_first
 
         if player1Starts == 1:
-            players = {1: {"agent": player1, "name": player1.name},
+            players = {
+                1: {"agent": player1, "name": player1.name},
                 -1: {"agent": player2, "name": player2.name}}
             logger.info(player1.name + ' plays as X')
         else:
-            players = {1: {"agent": player2, "name": player2.name},
+            players = {
+                1: {"agent": player2, "name": player2.name},
                 -1: {"agent": player1, "name": player1.name}}
             logger.info(player2.name + ' plays as X')
             logger.info('--------------')
@@ -93,10 +95,16 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
         while done == 0:
             turn = turn + 1
 
+            # for debug
+            print(f'Turn: {turn}')
+            print(f'state.playerTurn before: {state.playerTurn}') # NO
+            print(f'env.playerTurn: {env.currentPlayer}') # OK
+
             # Run the MCTS algo and return an action
             if turn < turns_until_tau0:
                 action, pi, MCTS_value, NN_value = \
                     players[state.playerTurn]['agent'].act(state, 1)
+
             else:
                 action, pi, MCTS_value, NN_value = \
                     players[state.playerTurn]['agent'].act(state, 0)
@@ -120,6 +128,7 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
             # the value of the newState from the POV of the new playerTurn
             # i.e. -1 if the previous player played a winning move
             state, value, done, _ = env.step(action)
+            print(f'state.playerTurn after: {state.playerTurn}')
 
             env.gameState.render(logger)
 
@@ -162,5 +171,7 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
                 pts = state.score
                 points[players[state.playerTurn]['name']].append(pts[0])
                 points[players[-state.playerTurn]['name']].append(pts[1])
+
+            print()
 
     return (scores, memory, points, sp_scores)

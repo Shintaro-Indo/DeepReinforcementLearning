@@ -72,6 +72,39 @@ https://medium.com/applied-data-science/alphago-zero-explained-in-one-diagram-36
 - takeAction：ボードとアクションが与えられると，次のボードを返す．
 - アクション番号は以下
 
+#### Gameクラス
+- インスタンス変数
+  - curentPlayer: 1 or -1
+  - gameState: GameStateのインスタンス
+  - actionSpace: actionsのiloc
+  - pieces: □などとの対応関係
+  - grid_shape
+  - input_shape
+  - name
+  - state_size: len(self.gameState.binary)
+  - action_size: len(self.actionSpace)
+
+#### GameStateクラス
+- インスタンス変数
+  - board(-> screenに変更)
+  - pieces
+  - winners
+  - playerTurn
+  - binary
+  - id
+  - allowedActions
+  - isEndGame
+  - value
+  - score
+
+  - takeAction()
+  - render()
+
+#### NewGameクラス
+- インスタンス変数
+  - currentPlayer: 1 or -1
+  -
+
 <img src='images/connect4_action.png'>
 
 ### run.ipynb
@@ -141,7 +174,7 @@ https://medium.com/applied-data-science/alphago-zero-explained-in-one-diagram-36
 
 ### funcs.py
 - 二つのエージェントを対戦させる，playMatches関数とplayMatchesBetweenFersions関数．
-- 自分のプレーヤーと対戦させる場合はrun.ipynbに以下のコードを実行
+- 自作プレーヤーと対戦させる場合はrun.ipynbで以下のコードを実行
 
 ```
 from game import Game
@@ -194,11 +227,12 @@ env
 ## 疑問
 current playerのvalueがenv内では0か-1にしかならなそう．
 
+
 ## Screen
 ```
-□|□ ○ □|□
- |---
-□|□ □ □ □
+□ □|○ □|□
+---|---
+□ □|□ □ □
 ...
 ```
 
@@ -207,5 +241,51 @@ current playerのvalueがenv内では0か-1にしかならなそう．
 1: player1
 2: player2
 3: groove
-4: horizontal fence
-5: vertical fence
+4: fence
+
+
+# Description of QuoridorEnv class
+
+```
+・graph(instance of networkx Graph): for route search and judging prohibited way
+
+・pawn(instance of Pawn class)
+  ・rows(dic): 各プレーヤーの駒の行番号の辞書．
+  ・cols(dic): 各プレーヤーの駒の列番号の辞書
+  ・movable_ilocs(dic): 各プレーヤーが駒を移動可能なilocのlistの辞書
+
+・fence(class): 壁
+  ・remaining_num(dic): 各プレーヤーのフェンスの残り枚数の辞書
+  ・non_duplicated_ilocs(list): 他のフェンスと重ならないilocのlist
+  ・placeable_ilocs(dic): 各プレーヤーが経路を塞がずにフェンスを置けるilocのlistの辞書．
+    ・0：フェンスの残り枚数がある場合
+    ・1, 2：フェンスがあれば0をコピー，なければ空のlistに．
+
+・board(class):　
+  ・possible_ilocs(dic): movable or placeable ilocs
+
+・screen(array): 9 x 9 board with pawn and fence
+
+・player_in_turn(int): 1 or 2
+
+・time_step(int): start with 1
+
+・done(boolean): judge the game is done or not
+
+・state(array): 23 x 9 x 9?
+```
+
+# relation of iloc and nod_num
+```
+　　　 0   2   4   6   8
+ 　 　＿＿＿＿＿＿＿＿＿＿＿
+ 0 |  0   1   2   3   4
+ 2 |  5   6   7   8   9
+ 4 | 10  11  12  13  14
+ 6 | 15  16  17  18  19
+ 8 | 20  21  22  23  24
+
+```
+
+# index of action
+<img src='images/action_index.png'>
