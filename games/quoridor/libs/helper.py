@@ -57,13 +57,30 @@ def get_goal_node_nums(env, player_num):
 def judge_done(env):
     if (1 in env.screen[0] or 2 in env.screen[2 * env.BOARD_SIZE - 2]):
         env.done = True
+
+    # for mcts
+    elif env.fence.remaining_num[1] == 0 and env.fence.remaining_num[2] == 0:
+        env.done = True
+
     return env.done
 
 
 def get_reward(env):
     # TODO: should be changed
     if env.done:
-        reward = 1
+        if env.player_in_turn in env.screen[0] or \
+                env.player_in_turn in env.screen[2 * env.BOARD_SIZE - 2]:
+            reward = 1
+        else:
+            opponent_num = get_opponent_num(env.player_in_turn)
+            player_distance = env.board.get_shortest_distance(env,
+                env.player_in_turn)
+            opponent_distance = env.board.get_shortest_distance(env,
+                opponent_num)
+            if player_distance <= opponent_distance:
+                reward = 1
+            else:
+                reward = -1
     else:
         reward = 0
     return reward

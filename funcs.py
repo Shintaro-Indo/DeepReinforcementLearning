@@ -97,8 +97,6 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
 
             # for debug
             print(f'Turn: {turn}')
-            print(f'state.playerTurn before: {state.playerTurn}') # NO
-            print(f'env.playerTurn: {env.currentPlayer}') # OK
 
             # Run the MCTS algo and return an action
             if turn < turns_until_tau0:
@@ -128,7 +126,6 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
             # the value of the newState from the POV of the new playerTurn
             # i.e. -1 if the previous player played a winning move
             state, value, done, _ = env.step(action)
-            print(f'state.playerTurn after: {state.playerTurn}')
 
             env.gameState.render(logger)
 
@@ -171,7 +168,6 @@ def playMatches(game_name, player1, player2, EPISODES, logger, turns_until_tau0,
                 pts = state.score
                 points[players[state.playerTurn]['name']].append(pts[0])
                 points[players[-state.playerTurn]['name']].append(pts[1])
-
             print()
 
     return (scores, memory, points, sp_scores)

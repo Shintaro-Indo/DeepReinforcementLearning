@@ -66,6 +66,7 @@ class Quoridor:
 		Returns:
 			((next_state, value, done, info)) # value: reward?, info: None
 		"""
+		# print('step')
 		print(f'Player: {self.currentPlayer}')
 		print(f'Allowed: {sorted(self.gameState.allowedActions)}')
 
@@ -74,6 +75,7 @@ class Quoridor:
 		print(f'Action: {_action}')
 
 		next_state, value, done = self.gameState.takeAction(action)
+
 		self._env.step(_action, self._env.player_in_turn)
 		print(np.array(next_state.board).reshape(9, 9))
 		print(f'Remaining nums: {next_state.remainingNums}')
@@ -270,6 +272,17 @@ class QuoridorState():
 		if env_tmp.done:
 			value = newState.value[0]
 			done = 1
+
+		# for debug
+		# print('takeAction')
+		# print(f'Player: {newState.playerTurn}')
+		# print(f'Allowed: {sorted(newState.allowedActions)}')
+		# print(f'Action: {_action}')
+		# print('Screen')
+		# print(newScreen)
+		# print(f'Remaining nums: {newState.remainingNums}')
+		# print('Done: ', done)
+		# print()
 
 		return (newState, value, done)
 

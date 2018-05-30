@@ -18,6 +18,10 @@ class Board:
         self.possible_ilocs = {
             1: env.pawn.movable_ilocs[1] + env.fence.placeable_ilocs[1],
             2: env.pawn.movable_ilocs[2] + env.fence.placeable_ilocs[2]}
+        if env.fence.remaining_num[1] == 0:
+            self.possible_ilocs[1] = [self.get_shortest_iloc(env, 1)]
+        elif env.fence.remaining_num[2] == 0:
+            self.possible_ilocs[2] = [self.get_shortest_iloc(env, 2)]
 
     def get_shortest_iloc(self, env, player_num):
         current_node = get_current_node(env, player_num)
