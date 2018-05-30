@@ -23,13 +23,13 @@ class Quoridor:
 			((self._env.BOARD_SIZE - 1) ** 2) * 2)
 
 		self.pieces = {
-            '0': '□',
-            '1': '◆',
-            '-1': '●',
-			'2': '●',
-            '3': ' ',
-            '4': 'ー',
-            '5': '｜',}
+            '0': '0',
+            '1': '1',
+            '-1': '-1',
+			'2': '2',
+            '3': '3',
+            '4': '4',
+            '5': '5',}
 
 		rows = self._env.BOARD_SIZE * 2 - 1
 		cols = self._env.BOARD_SIZE * 2 - 1
@@ -129,13 +129,13 @@ class QuoridorState():
 		self.board
 		self.board = self.board.flatten()
 		self.pieces = {
-            '0': '□',
-            '1': '◆',
-            '-1': '●',
-			'2': '●',
-            '3': ' ',
-            '4': '-',
-            '5': '|',}
+            '0': '0',
+            '1': '1',
+            '-1': '-1',
+			'2': '2',
+            '3': '3',
+            '4': '4',
+            '5': '5',}
 		self.winners = []
 		self.playerTurn = playerTurn# {1: 1, 2: -1}[self._env.player_in_turn]
 		self.binary = self._binary() # (81*23,). [current player, opponent]
