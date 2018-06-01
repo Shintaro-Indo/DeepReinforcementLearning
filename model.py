@@ -28,6 +28,21 @@ class Gen_Model():
 
 	def fit(self, states, targets, epochs, verbose, validation_split,
 	 		batch_size):
+		# print('states: ', type(states))
+		# print('shape of states: ', states.shape)
+
+		# print('targets')
+		# print(targets)
+		# print('epochs: ', type(epochs))
+		# print('shaverbose: ', type(verbose))
+		# print('validation_split: ', type(validation_split))
+		# print('batch_size: ', type(batch_size))
+
+		# for value_head, policy_head in zip(targets['value_head'],
+		# 		targets['policy_head']):
+		# 	print('value_head: ', value_head)
+		# 	print('length of policy_head: ', len(policy_head))
+
 		return self.model.fit(states, targets, epochs=epochs, verbose=verbose,
 			validation_split = validation_split, batch_size = batch_size)
 

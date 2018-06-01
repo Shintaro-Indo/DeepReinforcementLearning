@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import itertools
 import json
 import time
@@ -167,3 +168,7 @@ def get_state(env):
             start_index + env.fence.remaining_num[opponent_player]):
         state[i] = 1
     return state
+
+def get_hash_state(env):
+    hash_state = hashlib.md5(env.state).hexdigest()
+    return hash_state

@@ -183,18 +183,28 @@ class Agent():
 
         for i in range(config.TRAINING_LOOPS):
             minibatch = random.sample(ltmemory, min(
-                config.BATCH_SIZE, len(ltmemory)))
+                config.BATCH_SIZE, len(ltmemory))) # len of minibatch: 10
 
             training_states = np.array([
                 self.model.convertToModelInput(row['state'])
                     for row in minibatch])
-            training_targets = {'value_head': np.array([
-                row['value'] for row in minibatch]),
-                'policy_head': np.array([row['AV'] for row in minibatch])}
+
+            training_targets = {
+                'value_head': np.array([row['value'] for row in minibatch]),
+                'policy_head': np.array([row['AV'] for row in minibatch])} # not correct
+
+            # print('length of value_head', len(training_targets['value_head']))
+            # print('length of policy_head', len(training_targets['policy_head']))
+            # for value_head, policy_head in zip(training_targets['value_head'],
+            #         training_targets['policy_head']):
+            #     print('value_head: ', value_head)
+            #     print('length of policy_head: ', len(policy_head))
+            # print()
+
 
             fit = self.model.fit(training_states, training_targets,
                 epochs=config.EPOCHS, verbose=1, validation_split=0,
-                    atch_size=32)
+                    batch_size=32)
             lg.logger_mcts.info('NEW LOSS %s', fit.history)
 
             self.train_overall_loss.append(

@@ -28,10 +28,16 @@ class QuoridorEnv:
             self.EVENS_P = np.arange(0, self._BOARD_SIZE - 1, 2) # 0-14
             self.EVENS_A = np.arange(0, self._BOARD_SIZE, 2) # 0-16
 
+        # variables
+
+        self.time_step = 1
+        self.player_in_turn = 1
+        self.done = False
+
         self.pawn = Pawn(self)
         self.fence = Fence(self)
 
-        # graph
+        ## graph
         self.graph = nx.Graph()
         self.graph.add_nodes_from(np.arange(self.BOARD_SIZE * self.BOARD_SIZE))
         for col in range(self.BOARD_SIZE - 1): # add vertival edges
@@ -43,23 +49,26 @@ class QuoridorEnv:
                 range(row * self.BOARD_SIZE,
                     row * self.BOARD_SIZE + self.BOARD_SIZE - 1)])
 
-        # board
-        self.board = Board(self)
+        ## screen
         self.screen = np.zeros((self._BOARD_SIZE, self._BOARD_SIZE))
 
-        ## groove
+        ### groove
         self.screen[self.ODDS, :] = 3 # odd rows
         self.screen[:, self.ODDS] = 3 # odd cols
 
-        ## player
+        ### player
         self.screen[self.pawn.ilocs[1]] = 1
         self.screen[self.pawn.ilocs[2]] = 2
 
-        # other variables
-        self.time_step = 1
-        self.player_in_turn = 1
-        self.done = False
+        ## state
         self.state = get_state(self)
+
+        ## board
+        self.board = Board(self)
+
+        ## history
+        # hash_state = get_hash_state(self)
+        self.history = [get_hash_state(self)]
 
         return self.state
 
@@ -90,7 +99,12 @@ class QuoridorEnv:
         done = judge_done(self)
         reward = get_reward(self)
         info = None
+
+        hash_state = get_hash_state(self)
+        self.history.append(hash_state)
+
         return next_state, reward, done, info
+
 
     def move_pawn(self, row, col, player_num):
         # update screen
@@ -127,3 +141,10 @@ class QuoridorEnv:
 
         # update board
         self.board.update_possible_ilocs(self)
+
+    def take_action(self, action, player_num):
+        """ to prepend recursion in update_possible_ilocs
+        """
+        # update screen
+        self.screen[np.where(self.screen == player_num)] = 0 # leave
+        self.screen[action[0], action[1]] = player_num # move

@@ -12,16 +12,34 @@ class Board:
                 1: np.arange(9),
                 2: np.arange(72, 81)}
 
-        self.update_possible_ilocs(env)
+        self.initialize_possible_ilocs(env)
 
-    def update_possible_ilocs(self, env):
+    def initialize_possible_ilocs(self, env):
         self.possible_ilocs = {
             1: env.pawn.movable_ilocs[1] + env.fence.placeable_ilocs[1],
             2: env.pawn.movable_ilocs[2] + env.fence.placeable_ilocs[2]}
-        if env.fence.remaining_num[1] == 0:
+
+    def update_possible_ilocs(self, env):
+        if env.fence.remaining_num[1] == 0 or env.fence.remaining_num[2] == 0:
             self.possible_ilocs[1] = [self.get_shortest_iloc(env, 1)]
-        elif env.fence.remaining_num[2] == 0:
             self.possible_ilocs[2] = [self.get_shortest_iloc(env, 2)]
+        else:
+            for player_num in [1, 2]:
+                for action in env.pawn.movable_ilocs[player_num]:
+                    env_tmp = copy.deepcopy(env)
+                    env_tmp.take_action(action, player_num)
+                    hash_state = get_hash_state(env_tmp)
+                    # print('history')
+                    # print(env_tmp.history)
+                    # print('state')
+                    # print(hash_state)
+                    if env_tmp.history.count(hash_state) >= 1:
+                        env.pawn.movable_ilocs[player_num].remove(action)
+
+            self.possible_ilocs = {
+                1: env.pawn.movable_ilocs[1] + env.fence.placeable_ilocs[1],
+                2: env.pawn.movable_ilocs[2] + env.fence.placeable_ilocs[2]}
+
 
     def get_shortest_iloc(self, env, player_num):
         current_node = get_current_node(env, player_num)

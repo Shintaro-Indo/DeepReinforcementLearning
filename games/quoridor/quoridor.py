@@ -72,7 +72,7 @@ class Quoridor:
 
 		row, col = get_position_from_action_index(action)
 		_action = (row, col)
-		print(f'Action: {_action}')
+		print(f'Action: {action}')
 
 		next_state, value, done = self.gameState.takeAction(action)
 
@@ -115,7 +115,10 @@ class Quoridor:
 			cA[47], cA[46], cA[45], cA[44], cA[43],
 				cA[42], cA[41], cA[40],cA[39],
 			cA[51], cA[50], cA[49],cA[48],
-			cA[56], cA[55], cA[54], cA[53], cA[52], cA[51]])
+			cA[56], cA[55], cA[54], cA[53], cA[52]]) # cA[51]
+
+		# print('length of actionValues: ', len(actionValues))
+		# print('length of currentAV: ', len(currentAV))
 
 		identities.append((QuoridorState(env_tmp, state.playerTurn), currentAV))
 
@@ -137,7 +140,7 @@ class QuoridorState():
             '4': '4',
             '5': '5',}
 		self.winners = []
-		self.playerTurn = playerTurn# {1: 1, 2: -1}[self._env.player_in_turn]
+		self.playerTurn = playerTurn # {1: 1, 2: -1}[self._env.player_in_turn]
 		self.binary = self._binary() # (81*23,). [current player, opponent]
 		self.id = self._convertStateToId() # e.g. '010..0' (length: 81*23)
 		self.allowedActions = self._allowedActions() # list of allowd index
@@ -190,11 +193,13 @@ class QuoridorState():
 		Returns:
 			id: e.g. '010...010...0' (length: 84)
 		"""
-		position = copy.deepcopy(self._env.state.astype(int))
-		position = position.flatten()
+		# position = copy.deepcopy(self._env.state.astype(int))
+		# position = position.flatten()
+		#
+		# id = ''.join(map(str, position))
 
-		id = ''.join(map(str, position))
-
+		# hash ver
+		id = hashlib.md5(self.binary).hexdigest()
 		return id
 
 	def _checkForEndGame(self):
@@ -274,13 +279,17 @@ class QuoridorState():
 			done = 1
 
 		# for debug
+
 		# print('takeAction')
-		# print(f'Player: {newState.playerTurn}')
-		# print(f'Allowed: {sorted(newState.allowedActions)}')
-		# print(f'Action: {_action}')
-		# print('Screen')
-		# print(newScreen)
+		# print('time_step: ', self._env.time_step)
+		# print(f'Player: {self.playerTurn}')
+		# print(f'Allowed: {sorted(self.allowedActions)}')
+		# print(f'Action: {action}')
+		# # print('Screen')
+		# # print(newScreen)
 		# print(f'Remaining nums: {newState.remainingNums}')
+		# print(f'hash_state: ', get_hash_state(newState._env))
+		# print(f'history: ', newState._env.history)
 		# print('Done: ', done)
 		# print()
 

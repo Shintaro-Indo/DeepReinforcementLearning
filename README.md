@@ -272,7 +272,7 @@ current playerのvalueがenv内では0か-1にしかならなそう．
 
 ・done(boolean): judge the game is done or not
 
-・state(array): 23 x 9 x 9?
+・state(array): 23 x 9 x 9
 ```
 
 # relation of iloc and nod_num
